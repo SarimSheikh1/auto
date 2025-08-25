@@ -32,6 +32,12 @@ st.markdown(
         transform: scale(1.02);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+    .restart-button {
+        background: linear-gradient(45deg, #FF4B4B, #F9AB00) !important;
+    }
+    .new-word-button {
+        background: linear-gradient(45deg, #2196F3, #21CBF3) !important;
+    }
     .stTextInput>div>div>input {
         background-color: #2d2d2d;
         color: white;
@@ -75,6 +81,15 @@ st.markdown("### Web Search Automation Tool")
 
 # Create tabs for better organization
 tab1, tab2 = st.tabs(["🔍 Text Analysis", "🌐 Platform Search"])
+
+# List of sample words for the "New Word" feature
+SAMPLE_WORDS = [
+    "Artificial Intelligence", "Machine Learning", "Data Science", 
+    "Web Development", "Python Programming", "Streamlit Applications",
+    "Natural Language Processing", "Computer Vision", "Deep Learning",
+    "Cloud Computing", "Internet of Things", "Cybersecurity",
+    "Blockchain Technology", "Virtual Reality", "Augmented Reality"
+]
 
 # Simple text analysis function (replaces the transformers model)
 def analyze_text(text):
@@ -149,37 +164,96 @@ def search_snapchat(query):
     webbrowser.open(url)
     return url
 
+# Function to clear all inputs and results
+def restart_app():
+    st.session_state.text_input = ""
+    st.session_state.query = ""
+    st.rerun()
+
+# Function to generate a new random word
+def get_new_word():
+    return random.choice(SAMPLE_WORDS)
+
 with tab1:
     st.header("Text Analysis")
+    
+    # Initialize session state for text input
+    if 'text_input' not in st.session_state:
+        st.session_state.text_input = ""
+    
+    # Initialize session state for new word
+    if 'current_word' not in st.session_state:
+        st.session_state.current_word = get_new_word()
+    
+    # Create columns for buttons at the top
+    col_buttons1, col_buttons2 = st.columns([1, 1])
+    
+    with col_buttons1:
+        if st.button("🔄 Restart", key="restart_tab1", use_container_width=True, 
+                    help="Clear all inputs and results"):
+            restart_app()
+    
+    with col_buttons2:
+        if st.button("✨ New Word", key="new_word_btn", use_container_width=True, 
+                    help="Get a new random word to analyze"):
+            st.session_state.current_word = get_new_word()
+            st.session_state.text_input = st.session_state.current_word
+            st.rerun()
+    
+    # Text area with current word as placeholder or value
     text_input = st.text_area(
         "Enter text for analysis:",
-        placeholder="Type your text here...",
-        height=150
+        value=st.session_state.text_input,
+        placeholder=st.session_state.current_word,
+        height=150,
+        key="text_analysis_input"
     )
     
-    if st.button("Analyze Text", key="analyze_btn"):
-        if text_input:
-            with st.spinner("Analyzing..."):
-                analysis = analyze_text(text_input)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown('<div class="platform-card">', unsafe_allow_html=True)
-                st.metric("Word Count", analysis["Word Count"])
-                st.metric("Character Count", analysis["Character Count"])
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            with col2:
-                st.markdown('<div class="platform-card">', unsafe_allow_html=True)
-                st.metric("Sentiment", analysis["Sentiment"])
-                st.metric("Readability", analysis["Readability"])
-                st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.warning("Please enter some text to analyze.")
+    # Buttons for analysis
+    col_analyze1, col_analyze2 = st.columns([2, 1])
+    
+    with col_analyze1:
+        if st.button("Analyze Text", key="analyze_btn", use_container_width=True):
+            if text_input:
+                with st.spinner("Analyzing..."):
+                    analysis = analyze_text(text_input)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown('<div class="platform-card">', unsafe_allow_html=True)
+                    st.metric("Word Count", analysis["Word Count"])
+                    st.metric("Character Count", analysis["Character Count"])
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown('<div class="platform-card">', unsafe_allow_html=True)
+                    st.metric("Sentiment", analysis["Sentiment"])
+                    st.metric("Readability", analysis["Readability"])
+                    st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.warning("Please enter some text to analyze.")
+    
+    with col_analyze2:
+        if st.button("Use Sample Word", key="sample_word_btn", use_container_width=True):
+            st.session_state.text_input = st.session_state.current_word
+            st.rerun()
 
 with tab2:
     st.header("Platform Search")
-    query = st.text_input("Enter your search query:", placeholder="Search for movies, profiles, or anything...")
+    
+    # Initialize session state for query
+    if 'query' not in st.session_state:
+        st.session_state.query = ""
+    
+    # Restart button at the top
+    if st.button("🔄 Restart", key="restart_tab2", use_container_width=True, 
+                help="Clear all inputs and results"):
+        restart_app()
+    
+    query = st.text_input("Enter your search query:", 
+                         value=st.session_state.query,
+                         placeholder="Search for movies, profiles, or anything...",
+                         key="search_query_input")
     
     # Organize buttons in columns for better layout
     col1, col2, col3 = st.columns(3)
