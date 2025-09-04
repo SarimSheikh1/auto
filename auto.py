@@ -286,6 +286,7 @@ with tab2:
     with col2:
         if st.button("🎥 Google Play Movies", key="play_btn"):
             if query: 
+                
                 url = search_google_play_movies(query)
                 st.success(f"Searching Google Play Movies for: {query}")
                 st.info(f"URL: {url}")
