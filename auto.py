@@ -358,3 +358,4 @@ st.markdown(
     "<div style='text-align: center; color: #888;'>Built with ❤️ by Sarim</div>", 
     unsafe_allow_html=True
 )
+    
